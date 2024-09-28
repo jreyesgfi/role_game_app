@@ -1,6 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:role_game_app/domain_layer/entities/player_entities.dart';
 
+final playerProvider = StateNotifierProvider<PlayerNotifier, Player>((ref) {
+  return PlayerNotifier();
+});
+
 class PlayerNotifier extends StateNotifier<Player> {
   PlayerNotifier()
       : super(Player(
@@ -16,9 +20,9 @@ class PlayerNotifier extends StateNotifier<Player> {
 
   // Equipament
   void equipPermanentObject(PermanentObject object, bool disposing) {
-    int quantity = disposing ? -1 : 1;
-    Attributes updatedAttributes =
-        _applyAttributes(state.currentAttributes, object.effects, quantity);
+    int multiplier = disposing ? -1 : 1;
+    Attributes effects = object.effects * multiplier;
+    Attributes updatedModAttributes = state.modAttributes + effects;
     List<PermanentObject> updatedPermanentObjects = disposing
         ? state.permanentObjects
             .where((obj) => obj.name != object.name)
@@ -27,7 +31,7 @@ class PlayerNotifier extends StateNotifier<Player> {
 
     state = Player(
       baseAttributes: state.baseAttributes,
-      currentAttributes: updatedAttributes,
+      modAttributes: updatedModAttributes,
       permanentObjects: updatedPermanentObjects,
       consumables: state.consumables,
       activeSpells: state.activeSpells,
@@ -40,8 +44,8 @@ class PlayerNotifier extends StateNotifier<Player> {
       return;
     }
 
-    Attributes updatedAttributes = _applyAttributes(
-        state.currentAttributes, consumable.effects, consumable.quantity);
+    Attributes effects = consumable.effects * consumable.quantity;
+    Attributes updatedModAttributes = state.modAttributes + effects;
 
     List<Consumable> updatedConsumables = state.consumables
         .map((item) {
@@ -64,11 +68,9 @@ class PlayerNotifier extends StateNotifier<Player> {
 
     state = Player(
       baseAttributes: state.baseAttributes,
-      currentAttributes: updatedAttributes,
+      modAttributes: updatedModAttributes,
       permanentObjects: state.permanentObjects,
-      consumables: state.consumables
-          .where((item) => item.name != consumable.name)
-          .toList(),
+      consumables: updatedConsumables,
       activeSpells: state.activeSpells,
     );
   }
@@ -85,36 +87,6 @@ class PlayerNotifier extends StateNotifier<Player> {
       return false;
     }
   }
-
-  // Helper functions
-  Attributes _applyAttributes(
-      Attributes original, Attributes change, int quantity) {
-    Attributes finalChange = _applyEffects(change, quantity);
-    return Attributes(
-      strength: original.strength + finalChange.strength,
-      dexterity: original.dexterity + finalChange.dexterity,
-      constitution: original.constitution + finalChange.constitution,
-      intelligence: original.intelligence + finalChange.intelligence,
-      charisma: original.charisma + finalChange.charisma,
-      luck: original.luck + finalChange.luck,
-      magicLevel: original.magicLevel + finalChange.magicLevel,
-    );
-  }
-
-  Attributes _applyEffects(Attributes attributes, int quantity) {
-    return Attributes(
-      strength: attributes.strength * quantity,
-      dexterity: attributes.dexterity * quantity,
-      constitution: attributes.constitution * quantity,
-      intelligence: attributes.intelligence * quantity,
-      charisma: attributes.charisma * quantity,
-      luck: attributes.luck * quantity,
-      magicLevel: attributes.magicLevel * quantity,
-    );
-  }
 }
 
-// Provider for the player state using Riverpod
-final playerProvider = StateNotifierProvider<PlayerNotifier, Player>((ref) {
-  return PlayerNotifier();
-});
+

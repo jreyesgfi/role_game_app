@@ -3,21 +3,26 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
   // colors
-  static const primaryColor = Color(0xFFe65129);
-  static const secondaryColor = Color(0xFF2633C5);
-  static const accentColor = Color(0xFFe65129);
+  static const primaryColor = Color(0xFF103E5E);
+  static const secondaryColor = Color(0xFFF1EDB7);
+  static const accentColor = Color.fromARGB(255, 241, 225, 0);
   
   // dark
-  static const darkColor = Color(0xff335067);
-  static const textColor = Color(0xFF335067);
+  static const darkColor = Color(0xFF103E5E);
+  static const textColor = Color(0xFF103E5E);
 
   // light
+  static Color lightColor = const Color(0xFFF1EDB7);
   static Color greyColor = fadeColor(darkColor);
   static Color lightGreyColor = fadeColor(greyColor);
   static const whiteColor = Color(0xffffffff);
   static const primaryColorLight = Color.fromARGB(237, 244, 245, 255);
   static Color primaryColorFaded = fadeColor(primaryColor);
   static Color secondaryColorFaded = fadeColor(secondaryColor);
+
+  // good bad
+  static Color goodColor = const Color.fromARGB(255, 32, 155, 106);
+  static Color badColor = const Color.fromARGB(255, 192, 29, 17);
 
 
   // transparent

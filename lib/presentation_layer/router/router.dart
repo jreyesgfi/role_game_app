@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:role_game_app/presentation_layer/router/routes.dart';
+import 'package:role_game_app/presentation_layer/screens.dart/main/main_screen.dart';
 import 'package:role_game_app/presentation_layer/screens.dart/screen_wrapper.dart';
 import 'package:role_game_app/presentation_layer/screens.dart/settings/settings_screen.dart';
 import 'package:role_game_app/presentation_layer/screens.dart/test/test_screen.dart';
@@ -26,10 +27,10 @@ final GoRouter router = GoRouter(
               NoAnimationPage(key: state.pageKey, child: TestScreen())
         ),
         GoRoute(
-          path: '/${AppRoute.page2.name}',
-          name: AppRoute.page2.name,
+          path: '/${AppRoute.main.name}',
+          name: AppRoute.main.name,
           pageBuilder: (context, state) =>
-              NoAnimationPage(key: state.pageKey, child: TestScreen())
+              NoAnimationPage(key: state.pageKey, child: MainScreen())
         ),
         GoRoute(
           path: '/${AppRoute.page3.name}',

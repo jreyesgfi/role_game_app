@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 enum AppRoute {
   page1,
-  page2,
+  main,
   page3,
   settings,
   // not included in navigation
@@ -20,7 +20,7 @@ enum AppSubRoute {
 AppRoute initialRoute = AppRoute.page1;
 List<AppRoute> displayedRoutes = [
   AppRoute.page1,
-  AppRoute.page2,
+  AppRoute.main,
   AppRoute.page3,
   AppRoute.settings,
 ];
@@ -50,10 +50,10 @@ final Map<AppRoute,NavigationDestinationItem> navigationItems = {
     selectedIconPath: "assets/icons/chrono.svg",
     label: "Página 1",
   ),
-  AppRoute.page2:NavigationDestinationItem(
+  AppRoute.main:NavigationDestinationItem(
     iconPath: "assets/icons/chart.svg",
     selectedIconPath: "assets/icons/chart.svg",
-    label: "Página 2",
+    label: "Tu historia",
   ),
   AppRoute.page3:NavigationDestinationItem(
     icon: Icons.format_list_bulleted,
