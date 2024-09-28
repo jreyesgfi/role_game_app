@@ -1,6 +1,6 @@
 {
-    "name": "prision_card_game",
-    "short_name": "prision_card_game",
+    "name": "role_game_app",
+    "short_name": "role_game_app",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
