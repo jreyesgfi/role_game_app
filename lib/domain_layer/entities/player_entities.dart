@@ -47,21 +47,25 @@ class Attributes {
 
 class PermanentObject {
   String name;
+  String type;
   Attributes effects;
 
   PermanentObject({
     required this.name,
+    required this.type,
     required this.effects,
   });
 }
 
 class Consumable {
   String name;
+  String type;
   Attributes effects;
   int quantity;
 
   Consumable({
     required this.name,
+    required this.type,
     required this.effects,
     required this.quantity,
   });

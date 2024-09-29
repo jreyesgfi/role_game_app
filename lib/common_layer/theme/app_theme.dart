@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/widgets.dart';
 import 'app_colors.dart';
 import 'app_text_styles.dart';
 import 'dart:ui';
@@ -52,10 +54,13 @@ class AppTheme {
   // Space
   static double leftOuterPadding = 32;
   static double rightOuterPadding = 16;
-  static double leftInnerPadding = 12;
+  static double leftInnerPadding = 16;
   static BorderRadius circularBorderRadius = BorderRadius.circular(16);
 
   static double verticalGapUnit = 8;
+
+  // Shapes
+  static BorderRadius borderRadius = BorderRadius.circular(12.0);
 
   static ThemeData get theme {
     return ThemeData(

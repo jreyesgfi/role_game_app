@@ -54,6 +54,7 @@ class PlayerNotifier extends StateNotifier<Player> {
             if (newQuantity > 0) {
               return Consumable(
                   name: item.name,
+                  type: item.type,
                   effects: item.effects,
                   quantity: newQuantity);
             } else {
