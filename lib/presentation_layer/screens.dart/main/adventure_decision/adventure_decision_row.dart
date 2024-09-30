@@ -23,8 +23,8 @@ class AdventureDecisionRow extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        padding: EdgeInsets.symmetric(horizontal: AppTheme.leftInnerPadding, vertical: AppTheme.verticalGapUnit),
+        duration: const Duration(milliseconds: 300),  // Smooth transition duration
+        padding: EdgeInsets.symmetric(horizontal: AppTheme.leftInnerPadding, vertical: AppTheme.verticalGapUnit*2),
         margin: EdgeInsets.symmetric(vertical: AppTheme.verticalGapUnit),
         decoration: BoxDecoration(
           color: selected ? AppColors.darkColor : AppColors.lightColor,  // Background color transition
@@ -52,7 +52,6 @@ class AdventureDecisionRow extends StatelessWidget {
                     style: AppTextStyles.subtitle.copyWith(
                       color: selected ? AppColors.lightColor : AppColors.darkColor,  // Text color transition
                     ),
-                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,  // Prevent title from overflowing the row
                   ),
                 ),
@@ -60,14 +59,18 @@ class AdventureDecisionRow extends StatelessWidget {
             ),
             SizedBox(height: 8),
 
-            // Description (will wrap to avoid being cut off)
-            Text(
-              description,
-              style: AppTextStyles.body.copyWith(
-                color: selected ? AppColors.lightColor : AppColors.darkColor,  // Text color transition
+            // Description (Animated maxLines)
+            AnimatedSize(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              child: Text(
+                description,
+                style: AppTextStyles.body.copyWith(
+                  color: selected ? AppColors.lightColor : AppColors.darkColor,  // Text color transition
+                ),
+                maxLines: selected ? 4 : 2,  // Expand or collapse description when selected
+                overflow: TextOverflow.ellipsis,  // Prevent description from overflowing
               ),
-              maxLines: selected ? 10:2,  // Optional: You can limit the number of lines
-              overflow: TextOverflow.ellipsis,  // Prevent description from overflowing
             ),
           ],
         ),

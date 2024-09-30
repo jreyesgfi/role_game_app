@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:role_game_app/common_layer/theme/app_colors.dart';
+import 'package:role_game_app/common_layer/theme/app_theme.dart';
+import 'package:role_game_app/presentation_layer/screens.dart/main/adventure_decision/adventure_decision_row.dart';
+import 'package:role_game_app/presentation_layer/widgets_common/animation/animated_elevated_button.dart';
 import 'package:role_game_app/presentation_layer/widgets_common/animation/entering_animation.dart';
-import 'adventure_decision_row.dart';
 import 'package:role_game_app/presentation_layer/providers/adventure_provider.dart';
 
 class AdventureDecisionSelector extends ConsumerStatefulWidget {
@@ -31,43 +34,50 @@ class AdventureDecisionSelectorState
         ...List.generate(adventure.currentOptions.length, (index) {
           final option = adventure.currentOptions[index];
           return EntryTransition(
-              position: (index%5) + 4,
-              totalAnimations: 10,
-              child: AdventureDecisionRow(
-                letter: String.fromCharCode(
-                    65 + index), // Convert index to letter (A, B, C, ...)
-                title: option.title,
-                description: option.body,
-                selected: index == selectedIndex,
-                onTap: () {
-                  setState(() {
-                    // Toggle selection: deselect if the same item is clicked again
-                    selectedIndex = (selectedIndex == index) ? -1 : index;
-                  });
-                },
-              ));
+            position: (index % 5) + 4,
+            totalAnimations: 10,
+            child: AdventureDecisionRow(
+              letter: String.fromCharCode(
+                  65 + index), // Convert index to letter (A, B, C, ...)
+              title: option.title,
+              description: option.body,
+              selected: index == selectedIndex,
+              onTap: () {
+                setState(() {
+                  // Toggle selection: deselect if the same item is clicked again
+                  selectedIndex = (selectedIndex == index) ? -1 : index;
+                });
+              },
+            ),
+          );
         }),
 
         SizedBox(height: 16),
 
         EntryTransition(
-          position: adventure.currentOptions.length%5 + 5,
+          position: adventure.currentOptions.length % 5 + 5,
           totalAnimations: 10,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              ElevatedButton(
+              CustomAnimatedButton(
                 onPressed: selectedIndex != -1
                     ? () {
-                        notifier.selectOption(
-                            selectedIndex); // Trigger the action for the selected option
+                        notifier.selectOption(selectedIndex);
                       }
                     : null, // Disable if no option is selected
-                child: Text('Continue'),
+                enabledColor: AppColors.primaryColor,
+                enabledTextColor: AppColors.whiteColor,
+                disabledColor: AppColors.lightGreyColor,
+                disabledTextColor: AppColors.greyColor,
+                shape: RoundedRectangleBorder(
+                  borderRadius: AppTheme.borderRadius,
+                ),
+                child: const Text('Continue'),
               ),
             ],
           ),
-        )
+        ),
       ],
     );
   }

@@ -107,6 +107,10 @@ class AppTheme {
                 .primaryColor, // Set primary color for button background
             foregroundColor: Colors.white, // Button text color
             textStyle: const TextStyle(fontWeight: FontWeight.bold),
+            shape: RoundedRectangleBorder(
+              borderRadius:
+                  AppTheme.borderRadius, // Rounded corners for the button
+            ),
           ),
         ),
         floatingActionButtonTheme: FloatingActionButtonThemeData(
