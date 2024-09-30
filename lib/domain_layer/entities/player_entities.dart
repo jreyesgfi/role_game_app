@@ -1,3 +1,7 @@
+import 'dart:math';
+
+import 'package:flutter/material.dart';
+
 class Attributes {
   int strength;
   int dexterity;
@@ -6,6 +10,8 @@ class Attributes {
   int charisma;
   int luck;
   int magicLevel;
+  int maxLife;
+  int burdenCapacity;
 
   Attributes({
     required this.strength,
@@ -15,6 +21,8 @@ class Attributes {
     required this.charisma,
     required this.luck,
     required this.magicLevel,
+    required this.maxLife,
+    required this.burdenCapacity,
   });
 
   // Multiplication by an int (for scaling effects)
@@ -27,6 +35,8 @@ class Attributes {
       charisma: charisma * multiplier,
       luck: luck * multiplier,
       magicLevel: magicLevel * multiplier,
+      maxLife: maxLife * multiplier,
+      burdenCapacity: burdenCapacity * multiplier,
     );
   }
 
@@ -40,38 +50,88 @@ class Attributes {
       charisma: charisma + other.charisma,
       luck: luck + other.luck,
       magicLevel: magicLevel + other.magicLevel,
+      maxLife: maxLife + other.maxLife,
+      burdenCapacity: burdenCapacity + other.burdenCapacity,
     );
   }
 }
 
+final defaultAttributes = Attributes(
+  strength: 0,
+  dexterity: 0,
+  constitution: 0,
+  intelligence: 0,
+  charisma: 0,
+  luck: 0,
+  magicLevel: 0,
+  maxLife: 0,
+  burdenCapacity: 0,
+);
 
 class PermanentObject {
   String name;
   String type;
+  int weight;
   Attributes effects;
+  List<VoidCallback> otherEffects;
 
   PermanentObject({
     required this.name,
     required this.type,
-    required this.effects,
-  });
+    required this.weight,
+    Attributes? effects,
+    this.otherEffects = const [],
+  }) : effects = effects ?? defaultAttributes;
 }
 
 class Consumable {
   String name;
   String type;
-  Attributes effects;
+  int lifeEffect;
+  Attributes attributesEffects;
+  List<VoidCallback> otherEffects;
   int quantity;
 
   Consumable({
     required this.name,
     required this.type,
-    required this.effects,
+    this.lifeEffect = 0,
+    Attributes? attributesEffects,
+    this.otherEffects = const [],
     required this.quantity,
-  });
+  }) : attributesEffects = attributesEffects ?? defaultAttributes;
+
+  Consumable? adjustQuantity(int quantityChange) {
+    if (quantityChange > 0) {
+      return copyWith(quantity: this.quantity + quantityChange);
+    }
+    if (quantity + quantityChange == 0) {
+      return null;
+    }
+    throw Exception('Cannot have negative quantity');
+  }
+
+  Consumable copyWith({
+    String? name,
+    String? type,
+    int? lifeEffect,
+    Attributes? attributesEffects,
+    List<VoidCallback>? otherEffects,
+    int? quantity,
+  }) {
+    return Consumable(
+      name: name ?? this.name,
+      type: type ?? this.type,
+      lifeEffect: lifeEffect ?? this.lifeEffect,
+      attributesEffects: attributesEffects ?? this.attributesEffects,
+      otherEffects: otherEffects ?? this.otherEffects,
+      quantity: quantity ?? this.quantity,
+    );
+  }
 }
 
 class Player {
+  int life;
   Attributes baseAttributes;
   Attributes modAttributes;
   List<PermanentObject> permanentObjects;
@@ -79,18 +139,104 @@ class Player {
   List<String> activeSpells;
 
   Player({
+    required this.life,
     required this.baseAttributes,
-    Attributes? modAttributes, // Allow modAttributes to be optional
+    Attributes? modAttributes,
     this.permanentObjects = const [],
     this.consumables = const [],
     this.activeSpells = const [],
-  }) : modAttributes = modAttributes ?? Attributes(
-          strength: 0, 
-          dexterity: 0, 
-          constitution: 0, 
-          intelligence: 0, 
-          charisma: 0, 
-          luck: 0, 
-          magicLevel: 0
-        );
+  }) : modAttributes = modAttributes ?? defaultAttributes;
+
+    Player copyWith({
+    int? life,
+    Attributes? baseAttributes,
+    Attributes? modAttributes,
+    List<PermanentObject>? permanentObjects,
+    List<Consumable>? consumables,
+    List<String>? activeSpells,
+  }) {
+    return Player(
+      life: life ?? this.life,
+      baseAttributes: baseAttributes ?? this.baseAttributes,
+      modAttributes: modAttributes ?? this.modAttributes,
+      permanentObjects: permanentObjects ?? this.permanentObjects,
+      consumables: consumables ?? this.consumables,
+      activeSpells: activeSpells ?? this.activeSpells,
+    );
+  }
+
+
+
+  ///////////////
+  // Save Resources
+  ///////////////
+
+  Player equipPermanentObject(PermanentObject object, bool disposing) {
+    int multiplier = disposing ? -1 : 1;
+    Attributes updatedModAttributes =
+        modAttributes + (object.effects * multiplier);
+
+    List<PermanentObject> updatedPermanentObjects = disposing
+        ? permanentObjects.where((obj) => obj.name != object.name).toList()
+        : [...permanentObjects, object];
+
+    return copyWith(
+      modAttributes: updatedModAttributes,
+      permanentObjects: updatedPermanentObjects,
+    );
+  }
+
+  Player saveConsumable(Consumable consumable) {
+    List<Consumable> updatedConsumables = consumables.map((item) {
+      if (item.name == consumable.name) {
+        return item.adjustQuantity(consumable.quantity)!;
+      }
+      return item;
+    }).toList();
+
+    // If consumable is not in the list, add it
+    if (!updatedConsumables.any((item) => item.name == consumable.name)) {
+      updatedConsumables.add(consumable);
+    }
+
+    return copyWith(consumables: updatedConsumables);
+  }
+
+
+
+
+  ///////////////
+  // Consume Resources
+  ///////////////
+
+  Player consumeItem(Consumable consumable) {
+    // stats
+    Attributes updatedModAttributes =
+        modAttributes + (consumable.attributesEffects * consumable.quantity);
+
+    // life
+    int newMaxLife = baseAttributes.maxLife + updatedModAttributes.maxLife;
+    int newLife = min(
+      newMaxLife,
+      life + (consumable.lifeEffect * consumable.quantity),
+    );
+
+    // new list of consumables
+    List<Consumable> updatedConsumables = consumables
+        .map((item) {
+          if (item.name == consumable.name) {
+            return item.adjustQuantity(-consumable.quantity);
+          }
+          return item;
+        })
+        .where((item) => item != null)
+        .cast<Consumable>()
+        .toList();
+
+    return copyWith(
+      life: newLife,
+      modAttributes: updatedModAttributes,
+      consumables: updatedConsumables,
+    );
+  }
 }

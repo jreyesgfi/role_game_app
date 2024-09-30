@@ -8,7 +8,8 @@ final playerProvider = StateNotifierProvider<PlayerNotifier, Player>((ref) {
 class PlayerNotifier extends StateNotifier<Player> {
   PlayerNotifier()
       : super(Player(
-            baseAttributes: Attributes(
+          life: 10,
+          baseAttributes: Attributes(
           strength: 10,
           dexterity: 10,
           constitution: 10,
@@ -16,67 +17,51 @@ class PlayerNotifier extends StateNotifier<Player> {
           charisma: 10,
           luck: 10,
           magicLevel: 1,
+          maxLife: 10,
+          burdenCapacity: 5,
         )));
 
-  // Equipament
-  void equipPermanentObject(PermanentObject object, bool disposing) {
-    int multiplier = disposing ? -1 : 1;
-    Attributes effects = object.effects * multiplier;
-    Attributes updatedModAttributes = state.modAttributes + effects;
-    List<PermanentObject> updatedPermanentObjects = disposing
-        ? state.permanentObjects
-            .where((obj) => obj.name != object.name)
-            .toList()
-        : [...state.permanentObjects, object];
 
-    state = Player(
-      baseAttributes: state.baseAttributes,
-      modAttributes: updatedModAttributes,
-      permanentObjects: updatedPermanentObjects,
-      consumables: state.consumables,
-      activeSpells: state.activeSpells,
-    );
-  }
+  // Save Resources
 
-  // Items
-  void consumeItem(Consumable consumable) {
-    if (!checkItemsAvailability(consumable)) {
-      return;
+  bool equipPermanentObject(PermanentObject object) {
+    if (!checkBurdenCapacity(object.weight)){
+      return false;
     }
-
-    Attributes effects = consumable.effects * consumable.quantity;
-    Attributes updatedModAttributes = state.modAttributes + effects;
-
-    List<Consumable> updatedConsumables = state.consumables
-        .map((item) {
-          if (item.name == consumable.name) {
-            int newQuantity = item.quantity - consumable.quantity;
-            if (newQuantity > 0) {
-              return Consumable(
-                  name: item.name,
-                  type: item.type,
-                  effects: item.effects,
-                  quantity: newQuantity);
-            } else {
-              return null;
-            }
-          }
-          return item;
-        })
-        .where((item) => item != null)
-        .cast<Consumable>()
-        .toList();
-
-    state = Player(
-      baseAttributes: state.baseAttributes,
-      modAttributes: updatedModAttributes,
-      permanentObjects: state.permanentObjects,
-      consumables: updatedConsumables,
-      activeSpells: state.activeSpells,
-    );
+    state = state.equipPermanentObject(object, false);
+    return true;
   }
 
-  bool checkItemsAvailability(Consumable requestedItem) {
+  bool saveConsumable(Consumable consumable) {
+    if (!checkBurdenCapacity(consumable.quantity)){
+      return false;
+    }
+    state = state.saveConsumable(consumable);
+    return true;
+  }
+
+
+  // Consume Resources
+  bool disposePermanentObject(PermanentObject object) {
+    if(!checkPermanentObjectAvailability(object)){
+      return false;
+    }
+    state = state.equipPermanentObject(object, true);
+    return true;
+  }
+
+  bool consumeItem(Consumable consumable) {
+    if (!checkConsumablesAvailability(consumable)) {
+      return false;
+    }
+    state = state.consumeItem(consumable);
+    return true;
+  }
+
+
+
+  // Check Resources Methods
+  bool checkConsumablesAvailability(Consumable requestedItem) {
     try {
       var ownedItem = state.consumables.firstWhere(
         (item) => item.name == requestedItem.name,
@@ -84,9 +69,18 @@ class PlayerNotifier extends StateNotifier<Player> {
 
       return ownedItem.quantity >= requestedItem.quantity;
     } catch (e) {
-      // If the item isn't found, return false
       return false;
     }
+  }
+  
+  bool checkPermanentObjectAvailability(PermanentObject requestedObject) {
+    return state.permanentObjects.any((obj) => obj.name == requestedObject.name);
+  }
+
+  bool checkBurdenCapacity(int requestedBurden) {
+    int totalCapacity = state.baseAttributes.burdenCapacity +
+        state.modAttributes.burdenCapacity;
+    return totalCapacity >= requestedBurden;
   }
 }
 
