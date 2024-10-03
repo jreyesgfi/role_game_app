@@ -70,6 +70,7 @@ class MonsterMission extends Mission {
   runMission(Player player){
     Player copyPlayer = player.copyWith();
     Combat combat = Combat(copyPlayer, monster);
-    return combat.runCombat();
+    //return combat.runCombat();
+    return false;
   }
 }

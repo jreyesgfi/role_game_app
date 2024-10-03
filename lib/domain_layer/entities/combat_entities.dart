@@ -38,103 +38,93 @@ class CombatAttributes {
 }
 
 class Combat {
-  Player player;
-  Monster monster;
+  final Player player;
+  final Monster monster;
   int monsterRemainingLife;
   int playerRemainingLife;
   int remainingMonsterQuantity;
+
+  // Track rolls and hit points for reporting purposes
+  int _attackerRolls = 0;
+  int _defenderRolls = 0;
+  int _hitPoints = 0;
 
   Combat(this.player, this.monster)
       : monsterRemainingLife = monster.life,
         playerRemainingLife = player.life,
         remainingMonsterQuantity = monster.quantity;
 
+  // Public getters for combat results, useful for UI
+  int get attackerRolls => _attackerRolls;
+  int get defenderRolls => _defenderRolls;
+  int get hitPoints => _hitPoints;
+
   // Simulate an offensive step (either player or monster attacks)
   void offensiveStep(bool monsterAttack) {
-    // Determine who is attacking and who is defending based on the monsterAttack flag
+    // Determine attacker and defender attributes based on the attack flag
     CombatAttributes attackerAttributes = monsterAttack
-        ? (monster.combatAttributes * monster.quantity)
+        ? (monster.combatAttributes * remainingMonsterQuantity)
         : player.combatAttributes;
     CombatAttributes defenderAttributes = monsterAttack
         ? player.combatAttributes
-        : (monster.combatAttributes * monster.quantity);
+        : (monster.combatAttributes * remainingMonsterQuantity);
 
     // Roll dice equal to speed for both attacker and defender
-    int attackerRolls = rollDiceTotal(attackerAttributes.speed);
-    int defenderRolls = rollDiceTotal(defenderAttributes.speed);
+    _attackerRolls = rollDiceTotal(attackerAttributes.speed);
+    _defenderRolls = rollDiceTotal(defenderAttributes.speed);
 
     // Check if the offensive is successful
-    if (attackerRolls > defenderRolls) {
-      int hitPoints;
-
-      // Check for critical hit
-      if (attackerRolls >= 2 * defenderRolls) {
-        hitPoints = attackerAttributes.attack;
+    if (_attackerRolls > _defenderRolls) {
+      // Calculate hit points based on critical hit or regular hit
+      if (_attackerRolls >= 2 * _defenderRolls) {
+        _hitPoints = attackerAttributes.attack;
       } else {
-        // Regular hit
-        hitPoints =
+        _hitPoints =
             max(attackerAttributes.attack - defenderAttributes.defense, 0) + 1;
       }
 
-      // Apply damage to either player or monster
+      // Apply damage to the respective party
       if (monsterAttack) {
-        playerRemainingLife -= hitPoints;
+        playerRemainingLife -= _hitPoints;
         print(
-            'Monster hit Player for $hitPoints damage! Player life: $playerRemainingLife');
+            'Monster hit Player for $_hitPoints damage! Player life: $playerRemainingLife');
       } else {
-        monsterRemainingLife -= hitPoints;
+        monsterRemainingLife -= _hitPoints;
         print(
-            'Player hit Monster for $hitPoints damage! Monster life: $monsterRemainingLife');
+            'Player hit Monster for $_hitPoints damage! Monster life: $monsterRemainingLife');
 
-        // If monster's life is reduced to zero, reduce the number of monsters
+        // If monster's life is reduced to zero, reduce monster quantity
         if (monsterRemainingLife <= 0) {
           remainingMonsterQuantity--;
-          monsterRemainingLife =
-              monster.life; // Reset life for the next monster
+          monsterRemainingLife = monster.life; // Reset life for next monster
           print(
               'One monster is defeated! Remaining monsters: $remainingMonsterQuantity');
         }
       }
     } else {
+      _hitPoints = 0;
       print(monsterAttack
           ? "Monster's attack missed!"
           : "Player's attack missed!");
     }
   }
 
-  // Simulate the combat rounds
-  bool runCombat() {
-    // Combat lasts for the max endurance between player and monster
-    int rounds = max(
-        player.combatAttributes.endurance, monster.combatAttributes.endurance);
-
-    for (int round = 0; round < rounds; round++) {
-      bool monsterAttackFirst =
-          monster.combatAttributes.speed * monster.quantity >= player.combatAttributes.speed;
-
-      // First attack
-      offensiveStep(monsterAttackFirst);
-      if (monsterDefeatedCheck()) {
-        return true;
-      }
-      if (playerDefeatedCheck()) {
-        return false;
-      }
-
-      // Second attack
-      offensiveStep(!monsterAttackFirst);
-      if (monsterDefeatedCheck()) {
-        return true;
-      }
-      if (playerDefeatedCheck()) {
-        return false;
-      }
+  // Run a single round of combat
+  bool runRound(bool monsterAttackFirst) {
+    offensiveStep(monsterAttackFirst);
+    if (monsterDefeatedCheck()) {
+      return true;
     }
-    // Combat ends when rounds are over, player loses if monsters are still alive
-    return false;
+    if (playerDefeatedCheck()) {
+      return false;
+    }
+
+    // Second attack if combat hasn't ended
+    offensiveStep(!monsterAttackFirst);
+    return monsterDefeatedCheck() || playerDefeatedCheck();
   }
 
-  // Checks
+  // Checks if the monster is defeated
   bool monsterDefeatedCheck() {
     if (remainingMonsterQuantity == 0) {
       print('All monsters are defeated!');
@@ -142,6 +132,7 @@ class Combat {
     return remainingMonsterQuantity == 0;
   }
 
+  // Checks if the player is defeated
   bool playerDefeatedCheck() {
     if (playerRemainingLife <= 0) {
       print('Player is defeated!');
