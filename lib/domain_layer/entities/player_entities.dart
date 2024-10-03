@@ -1,6 +1,8 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:role_game_app/domain_layer/entities/combat_entities.dart';
+import 'package:role_game_app/domain_layer/entities/mission_entities.dart';
 
 class Attributes {
   int strength;
@@ -132,40 +134,63 @@ class Consumable {
 
 class Player {
   int life;
+  int experiencePoints;
   Attributes baseAttributes;
   Attributes modAttributes;
+  CombatAttributes modCombatAttributes;
   List<PermanentObject> permanentObjects;
   List<Consumable> consumables;
   List<String> activeSpells;
 
   Player({
     required this.life,
+    required this.experiencePoints,
     required this.baseAttributes,
     Attributes? modAttributes,
+    CombatAttributes? modCombatAttributes,
     this.permanentObjects = const [],
     this.consumables = const [],
     this.activeSpells = const [],
-  }) : modAttributes = modAttributes ?? defaultAttributes;
+  })  : modAttributes = modAttributes ?? defaultAttributes,
+        modCombatAttributes = modCombatAttributes ?? defaultCombatAttributes;
 
-    Player copyWith({
+  /////////////
+  // Copy
+  /////////////
+
+  Player copyWith({
     int? life,
+    int? experiencePoints,
     Attributes? baseAttributes,
     Attributes? modAttributes,
+    CombatAttributes? modCombatAttributes,
     List<PermanentObject>? permanentObjects,
     List<Consumable>? consumables,
     List<String>? activeSpells,
   }) {
     return Player(
       life: life ?? this.life,
+      experiencePoints: experiencePoints ?? this.experiencePoints,
       baseAttributes: baseAttributes ?? this.baseAttributes,
       modAttributes: modAttributes ?? this.modAttributes,
+      modCombatAttributes: modCombatAttributes ?? this.modCombatAttributes,
       permanentObjects: permanentObjects ?? this.permanentObjects,
       consumables: consumables ?? this.consumables,
       activeSpells: activeSpells ?? this.activeSpells,
     );
   }
 
+  ///////////////
+  // Getters
+  ///////////////
+  Attributes get totalAttributes => baseAttributes + modAttributes;
 
+  CombatAttributes get combatAttributes => CombatAttributes(
+        attack: baseAttributes.strength + modCombatAttributes.attack,
+        defense: baseAttributes.constitution + modCombatAttributes.defense,
+        speed: baseAttributes.dexterity + modCombatAttributes.speed,
+        endurance: baseAttributes.constitution + modCombatAttributes.endurance,
+      );
 
   ///////////////
   // Save Resources
@@ -201,9 +226,6 @@ class Player {
 
     return copyWith(consumables: updatedConsumables);
   }
-
-
-
 
   ///////////////
   // Consume Resources

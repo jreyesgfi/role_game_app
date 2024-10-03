@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:role_game_app/domain_layer/entities/enemies_entities.dart';
+import 'package:role_game_app/domain_layer/entities/mission_entities.dart';
 
 class AdventureOption {
   final String title;
@@ -20,3 +22,13 @@ class Adventure {
     required this.currentOptions,
   });
 }
+
+class MonsterMission {
+  Monster monster;
+  
+  
+  MonsterMission({
+    required this.monster,
+  });
+}
+

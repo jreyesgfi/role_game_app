@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:role_game_app/domain_layer/entities/player_entities.dart';
 
@@ -9,6 +10,7 @@ class PlayerNotifier extends StateNotifier<Player> {
   PlayerNotifier()
       : super(Player(
           life: 10,
+          experiencePoints: 0,
           baseAttributes: Attributes(
           strength: 10,
           dexterity: 10,
@@ -29,6 +31,7 @@ class PlayerNotifier extends StateNotifier<Player> {
       return false;
     }
     state = state.equipPermanentObject(object, false);
+    applySideEffects(object.otherEffects);
     return true;
   }
 
@@ -55,6 +58,7 @@ class PlayerNotifier extends StateNotifier<Player> {
       return false;
     }
     state = state.consumeItem(consumable);
+    applySideEffects(consumable.otherEffects);
     return true;
   }
 
@@ -81,6 +85,15 @@ class PlayerNotifier extends StateNotifier<Player> {
     int totalCapacity = state.baseAttributes.burdenCapacity +
         state.modAttributes.burdenCapacity;
     return totalCapacity >= requestedBurden;
+  }
+
+
+
+  // Apply side effects
+  void applySideEffects(List<VoidCallback> sideEffects) {
+    for (int i =0; i < sideEffects.length; i++) {
+      sideEffects[i]();
+    }
   }
 }
 
