@@ -133,8 +133,8 @@ class Consumable {
 }
 
 class Player {
-  int life;
-  int experiencePoints;
+  int _life;
+  int _experiencePoints;
   Attributes baseAttributes;
   Attributes modAttributes;
   CombatAttributes modCombatAttributes;
@@ -143,16 +143,34 @@ class Player {
   List<String> activeSpells;
 
   Player({
-    required this.life,
-    required this.experiencePoints,
+    required int life,
+    required int experiencePoints,
     required this.baseAttributes,
     Attributes? modAttributes,
     CombatAttributes? modCombatAttributes,
     this.permanentObjects = const [],
     this.consumables = const [],
     this.activeSpells = const [],
-  })  : modAttributes = modAttributes ?? defaultAttributes,
+  })  : _life = life,
+        _experiencePoints = experiencePoints,
+        modAttributes = modAttributes ?? defaultAttributes,
         modCombatAttributes = modCombatAttributes ?? defaultCombatAttributes;
+
+  /////////////
+  // Setters
+  /////////////
+  set life(int value) {
+    _life = value;
+    if (_life <= 0) {
+      playerDefeated();
+    }
+  }
+
+  set experiencePoints(int value) {
+    _experiencePoints += value;
+    checkLevelUp();
+  }
+
 
   /////////////
   // Copy
@@ -191,6 +209,28 @@ class Player {
         speed: baseAttributes.dexterity + modCombatAttributes.speed,
         endurance: baseAttributes.constitution + modCombatAttributes.endurance,
       );
+
+
+  /////////////
+  // Change the player state
+  /////////////
+  void playerDefeated() {
+    print('Player is defeated!');
+    // Add logic for handling player defeat (e.g., restarting combat, game over, etc.)
+  }
+
+  void checkLevelUp() {
+    while (_experiencePoints >= experienceForNextLevel[level]!) {
+      _experiencePoints -= experienceForNextLevel[level]!;
+      levelUp();
+    }
+  }
+
+  void levelUp() {
+    level++;
+    print('Player leveled up to $level!');
+    // Additional logic for level-up bonuses can be added here.
+  }
 
   ///////////////
   // Save Resources
