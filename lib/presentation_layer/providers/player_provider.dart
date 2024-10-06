@@ -10,6 +10,7 @@ class PlayerNotifier extends StateNotifier<Player> {
   PlayerNotifier()
       : super(Player(
           life: 10,
+          level: 0,
           experiencePoints: 0,
           baseAttributes: Attributes(
           strength: 10,

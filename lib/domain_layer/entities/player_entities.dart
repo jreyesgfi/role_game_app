@@ -132,9 +132,34 @@ class Consumable {
   }
 }
 
+// Experience needed for each level
+final Map<int, int> experienceForNextLevel = {
+  1: 100,
+  2: 200,
+  3: 300,
+  4: 400,
+  5: 500,
+  6: 650,
+  7: 800,
+  8: 1000,
+  9: 1200,
+  10: 1500,
+  11: 1800,
+  12: 2200,
+  13: 2600,
+  14: 3000,
+  15: 3500,
+  16: 4000,
+  17: 4500,
+  18: 5000,
+  19: 6000,
+  20: 7000,
+};
+
 class Player {
   int _life;
   int _experiencePoints;
+  int level;
   Attributes baseAttributes;
   Attributes modAttributes;
   CombatAttributes modCombatAttributes;
@@ -144,6 +169,7 @@ class Player {
 
   Player({
     required int life,
+    required this.level,
     required int experiencePoints,
     required this.baseAttributes,
     Attributes? modAttributes,
@@ -179,6 +205,7 @@ class Player {
   Player copyWith({
     int? life,
     int? experiencePoints,
+    int? level,
     Attributes? baseAttributes,
     Attributes? modAttributes,
     CombatAttributes? modCombatAttributes,
@@ -188,6 +215,7 @@ class Player {
   }) {
     return Player(
       life: life ?? this.life,
+      level: level ?? this.level,
       experiencePoints: experiencePoints ?? this.experiencePoints,
       baseAttributes: baseAttributes ?? this.baseAttributes,
       modAttributes: modAttributes ?? this.modAttributes,
@@ -201,6 +229,8 @@ class Player {
   ///////////////
   // Getters
   ///////////////
+  int get life => _life;
+  int get experiencePoints => _experiencePoints;
   Attributes get totalAttributes => baseAttributes + modAttributes;
 
   CombatAttributes get combatAttributes => CombatAttributes(
